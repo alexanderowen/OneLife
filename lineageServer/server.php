@@ -1336,8 +1336,7 @@ function ls_frontPage() {
 
     global $header, $footer;
 
-    //eval( $header );
-    echo "<body bgcolor=#222222 text=white link=#b2a536 vlink=#b2a536 alink=#b2a536>";
+    eval( $header );
 
     echo "<center>";
 
@@ -1414,8 +1413,7 @@ function ls_frontPage() {
     echo "</table></center>";
     
     
-    echo "</body>";
-    //eval( $footer );
+    eval( $footer );
     }
 
 
