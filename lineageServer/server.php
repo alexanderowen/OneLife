@@ -2005,10 +2005,10 @@ function ls_displayGenRow( $inGenArray, $inCenterID, $inRelID, $inFullWords ) {
     for( $i=0; $i<$count; $i++ ) {
         $bgColorString = "";
         if( $full[$i] == $inCenterID ) {
-            $bgColorString = "bgcolor=#444444";
+            $bgColorString = "bgcolor=#87e5ff";
             }
         else {
-            $bgColorString = "bgcolor=#222222";
+            $bgColorString = "bgcolor=#b7efff";
             }
         
         
