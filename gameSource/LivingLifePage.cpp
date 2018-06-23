@@ -132,7 +132,7 @@ double computeFoodDecrementTimeSeconds(float heat) {
     return value;
     }
 
-int AONextFoodDrecementETA = 0;
+int AOFoodDrecementETA = 0;
 bool AOCalculateFoodDecrement = false;
 
 
