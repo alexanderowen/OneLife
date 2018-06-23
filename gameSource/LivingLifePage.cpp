@@ -6448,7 +6448,7 @@ void LivingLifePage::draw( doublePair inViewCenter,
         // AO: draw food decrement
         doublePair AOFoodDecrementPos = { lastScreenViewCenter.x - 425,
                                           lastScreenViewCenter.y - 313 };
-        char *AOFoodDecrementString = autoSprintf( "00.%02d", mYumBonus );
+        char *AOFoodDecrementString = autoSprintf( "00.%02d", AOFoodDecrementETA);
         pencilFont->drawString(AOFoodDecrementString, AOFoodDecrementPos, alignLeft);
         delete [] AOFoodDecrementString;
 
