@@ -6445,7 +6445,12 @@ void LivingLifePage::draw( doublePair inViewCenter,
             delete [] yumString;
             }
 
-
+        // AO: draw food decrement
+        doublePair AOFoodDecrementPos = { lastScreenViewCenter.x - 425,
+                                          lastScreenViewCenter.y - 313 };
+        char *AOFoodDecrementString = autoSprintf( "00.%02d", mYumBonus );
+        pencilFont->drawString(AOFoodDecrementString, AOFoodDecrementPos, alignLeft);
+        delete [] AOFoodDecrementString;
 
         doublePair atePos = { lastScreenViewCenter.x, 
                               lastScreenViewCenter.y - 347 };
@@ -7433,8 +7438,28 @@ void LivingLifePage::sendBugReport( int inBugNumber ) {
         }
     }
     
+// AO: copied straight out of server.cpp
+double computeFoodDecrementTimeSeconds(float heat) {
+    int maxFoodDecrementSeconds = 20; // If only there was a way to read from server/settings 
+    int minFoodDecrementSeconds = 2;
+    double value = maxFoodDecrementSeconds * 2 * heat;
+    
+    if( value > maxFoodDecrementSeconds ) {
+        // also reduce if too hot (above 0.5 heat)
+        
+        double extra = value - maxFoodDecrementSeconds;
 
+        value = maxFoodDecrementSeconds - extra;
+        }
+    
+    // all player temp effects push us up above min
+    value += minFoodDecrementSeconds;
 
+    return value;
+    }
+
+int AONextFoodDrecementETA = 0;
+bool AOCalculateFoodDecrement = false;
         
 void LivingLifePage::step() {
     if( apocalypseInProgress ) {
@@ -9743,7 +9768,12 @@ void LivingLifePage::step() {
                                       &justAteID,
                                       &responsiblePlayerID,
                                       &heldYum);
-                
+
+                if (AOCalculateFoodDecrement)
+                {
+                    AOFoodDecrementETA = computeFoodDecrementTimeSeconds(o.heat);
+                    AOCalculateFoodDecrement = false;
+                }
                 
                 // heldYum is 24th value, optional
                 if( numRead >= 23 ) {
@@ -12435,6 +12465,10 @@ void LivingLifePage::step() {
                 else {
                     char foodIncreased = false;
                     int oldFoodStore = ourLiveObject->foodStore;
+                    if (foodStore == oldFoodStore - 1) // AO: food loss from hunger
+                    {
+                        AOCalculateFoodDecrement = true; 
+                    }
                     
                     if( foodCapacity == ourLiveObject->foodCapacity &&
                         foodStore > ourLiveObject->foodStore ) {
