@@ -113,7 +113,8 @@ static char savingSpeechMask = false;
 
 
 // AO: copied straight out of server.cpp
-double computeFoodDecrementTimeSeconds(float heat) {
+double computeFoodDecrementTimeSeconds(float heat) 
+{
     int maxFoodDecrementSeconds = 20; // If only there was a way to read from server/settings 
     int minFoodDecrementSeconds = 2;
     double value = maxFoodDecrementSeconds * 2 * heat;
@@ -130,10 +131,23 @@ double computeFoodDecrementTimeSeconds(float heat) {
     value += minFoodDecrementSeconds;
 
     return value;
+}
+
+float AOLastKnownHeat = 0.0;
+int AOFoodDecrementETA = 0;
+bool AOCalculateFoodDecrement = false;
+
+double computeFoodDecrementTimeRemainingSeconds()
+{
+    double delta = AOFoodDecrementETA - game_getCurrentTime();
+    if (delta <= 0)
+    {
+    	return 0.0;
     }
 
-int AOFoodDrecementETA = 0;
-bool AOCalculateFoodDecrement = false;
+    return delta;   
+}
+
 
 
 // most recent home at end
@@ -6470,7 +6484,7 @@ void LivingLifePage::draw( doublePair inViewCenter,
         // AO: draw food decrement
         doublePair AOFoodDecrementPos = { lastScreenViewCenter.x - 425,
                                           lastScreenViewCenter.y - 313 };
-        char *AOFoodDecrementString = autoSprintf( "00.%02d", AOFoodDecrementETA);
+        char *AOFoodDecrementString = autoSprintf( "00.%04.1f", computeFoodDecrementTimeRemainingSeconds());
         pencilFont->drawString(AOFoodDecrementString, AOFoodDecrementPos, alignLeft);
         delete [] AOFoodDecrementString;
 
@@ -9768,13 +9782,8 @@ void LivingLifePage::step() {
                                       &justAteID,
                                       &responsiblePlayerID,
                                       &heldYum);
-
-                if (AOCalculateFoodDecrement)
-                {
-                    AOFoodDecrementETA = computeFoodDecrementTimeSeconds(o.heat);
-                    AOCalculateFoodDecrement = false;
-                }
-                
+		AOLastKnownHeat = o.heat;
+ 
                 // heldYum is 24th value, optional
                 if( numRead >= 23 ) {
 
@@ -12465,9 +12474,9 @@ void LivingLifePage::step() {
                 else {
                     char foodIncreased = false;
                     int oldFoodStore = ourLiveObject->foodStore;
-                    if (foodStore == oldFoodStore - 1) // AO: food loss from hunger
+                    if (foodStore == oldFoodStore - 1 || mYumBonus == oldYumBonus - 1) // AO: food loss from hunger
                     {
-                        AOCalculateFoodDecrement = true; 
+		        AOFoodDecrementETA = game_getCurrentTime() + computeFoodDecrementTimeSeconds(AOLastKnownHeat);
                     }
                     
                     if( foodCapacity == ourLiveObject->foodCapacity &&
