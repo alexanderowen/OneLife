@@ -112,6 +112,28 @@ static char savingSpeechColor = false;
 static char savingSpeechMask = false;
 
 
+// AO: copied straight out of server.cpp
+double computeFoodDecrementTimeSeconds(float heat) {
+    int maxFoodDecrementSeconds = 20; // If only there was a way to read from server/settings 
+    int minFoodDecrementSeconds = 2;
+    double value = maxFoodDecrementSeconds * 2 * heat;
+    
+    if( value > maxFoodDecrementSeconds ) {
+        // also reduce if too hot (above 0.5 heat)
+        
+        double extra = value - maxFoodDecrementSeconds;
+
+        value = maxFoodDecrementSeconds - extra;
+        }
+    
+    // all player temp effects push us up above min
+    value += minFoodDecrementSeconds;
+
+    return value;
+    }
+
+int AONextFoodDrecementETA = 0;
+bool AOCalculateFoodDecrement = false;
 
 
 // most recent home at end
@@ -7438,28 +7460,6 @@ void LivingLifePage::sendBugReport( int inBugNumber ) {
         }
     }
     
-// AO: copied straight out of server.cpp
-double computeFoodDecrementTimeSeconds(float heat) {
-    int maxFoodDecrementSeconds = 20; // If only there was a way to read from server/settings 
-    int minFoodDecrementSeconds = 2;
-    double value = maxFoodDecrementSeconds * 2 * heat;
-    
-    if( value > maxFoodDecrementSeconds ) {
-        // also reduce if too hot (above 0.5 heat)
-        
-        double extra = value - maxFoodDecrementSeconds;
-
-        value = maxFoodDecrementSeconds - extra;
-        }
-    
-    // all player temp effects push us up above min
-    value += minFoodDecrementSeconds;
-
-    return value;
-    }
-
-int AONextFoodDrecementETA = 0;
-bool AOCalculateFoodDecrement = false;
         
 void LivingLifePage::step() {
     if( apocalypseInProgress ) {
