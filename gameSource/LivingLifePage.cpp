@@ -112,11 +112,14 @@ static char savingSpeechColor = false;
 static char savingSpeechMask = false;
 
 
+float AOLastKnownHeat = 0.0;
+int AOFoodDecrementETA = 0;
+int maxFoodDecrementSeconds = 20; // If only there was a way to read these from server/settings 
+int minFoodDecrementSeconds = 2;
+
 // AO: copied straight out of server.cpp
 double computeFoodDecrementTimeSeconds(float heat) 
 {
-    int maxFoodDecrementSeconds = 20; // If only there was a way to read from server/settings 
-    int minFoodDecrementSeconds = 2;
     double value = maxFoodDecrementSeconds * 2 * heat;
     
     if( value > maxFoodDecrementSeconds ) {
@@ -132,10 +135,6 @@ double computeFoodDecrementTimeSeconds(float heat)
 
     return value;
 }
-
-float AOLastKnownHeat = 0.0;
-int AOFoodDecrementETA = 0;
-bool AOCalculateFoodDecrement = false;
 
 double computeFoodDecrementTimeRemainingSeconds()
 {
@@ -9782,7 +9781,7 @@ void LivingLifePage::step() {
                                       &justAteID,
                                       &responsiblePlayerID,
                                       &heldYum);
-		AOLastKnownHeat = o.heat;
+                AOLastKnownHeat = o.heat;
  
                 // heldYum is 24th value, optional
                 if( numRead >= 23 ) {
@@ -11399,7 +11398,10 @@ void LivingLifePage::step() {
                 // we have no measurement yet
                 ourObject->lastActionSendStartTime = 0;
                 ourObject->lastResponseTimeDelta = 0;
-                
+
+                // AO: initial values; per server.processLoggedInPlayer, player spawns at maxFoodDecrement 
+                AOLastKnownHeat = 0.0;
+                AOFoodDecrementETA = game_getCurrentTime() + maxFoodDecrementSeconds;
 
                 remapRandSource.reseed( ourID );
 
@@ -12476,7 +12478,7 @@ void LivingLifePage::step() {
                     int oldFoodStore = ourLiveObject->foodStore;
                     if (foodStore == oldFoodStore - 1 || mYumBonus == oldYumBonus - 1) // AO: food loss from hunger
                     {
-		        AOFoodDecrementETA = game_getCurrentTime() + computeFoodDecrementTimeSeconds(AOLastKnownHeat);
+                        AOFoodDecrementETA = game_getCurrentTime() + computeFoodDecrementTimeSeconds(AOLastKnownHeat);
                     }
                     
                     if( foodCapacity == ourLiveObject->foodCapacity &&
