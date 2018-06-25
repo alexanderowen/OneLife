@@ -114,8 +114,11 @@ static char savingSpeechMask = false;
 
 float AOLastKnownHeat = 0.0;
 int AOFoodDecrementETA = 0;
-int maxFoodDecrementSeconds = 20; // If only there was a way to read these from server/settings 
+double AOFoodDecrementFudge = 0.25; // fudge the time remaining, to account for RTT over network
+// values from server/settings; wish I could read these at runtime 
+int maxFoodDecrementSeconds = 20;
 int minFoodDecrementSeconds = 2;
+int eatBonus = 2; 
 
 // AO: copied straight out of server.cpp
 double computeFoodDecrementTimeSeconds(float heat) 
@@ -133,7 +136,7 @@ double computeFoodDecrementTimeSeconds(float heat)
     // all player temp effects push us up above min
     value += minFoodDecrementSeconds;
 
-    return value;
+    return value + AOFoodDecrementFudge;
 }
 
 double computeFoodDecrementTimeRemainingSeconds()
@@ -12480,6 +12483,14 @@ void LivingLifePage::step() {
                     {
                         AOFoodDecrementETA = game_getCurrentTime() + computeFoodDecrementTimeSeconds(AOLastKnownHeat);
                     }
+		    if (lastAteID != 0)
+		    {
+		    	ObjectRecord *lastAte = getObject(lastAteID);
+			if (foodStore - lastAteFillMax != lastAte->foodValue + eatBonus) // AO: ate food during same tick as food loss
+			{
+			    AOFoodDecrementETA = game_getCurrentTime() + computeFoodDecrementTimeSeconds(AOLastKnownHeat);
+			}
+		    }
                     
                     if( foodCapacity == ourLiveObject->foodCapacity &&
                         foodStore > ourLiveObject->foodStore ) {
