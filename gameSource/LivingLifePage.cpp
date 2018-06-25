@@ -150,7 +150,10 @@ double computeFoodDecrementTimeRemainingSeconds()
     return delta;   
 }
 
-
+void computeAndSetFoodDecrementETA()
+{
+	AOFoodDecrementETA = game_getCurrentTime() + computeFoodDecrementTimeSeconds(AOLastKnownHeat);	
+}
 
 // most recent home at end
 
@@ -9784,7 +9787,10 @@ void LivingLifePage::step() {
                                       &justAteID,
                                       &responsiblePlayerID,
                                       &heldYum);
-                AOLastKnownHeat = o.heat;
+				if (o.id == ourID)
+				{
+					AOLastKnownHeat = o.heat;
+				}
  
                 // heldYum is 24th value, optional
                 if( numRead >= 23 ) {
@@ -11322,6 +11328,7 @@ void LivingLifePage::step() {
                     babyO->inMotion = false;
                     
                     if( babyO->id == ourID ) {
+						computeAndSetFoodDecrementETA(); // AO: reset ETA when dropped
                         if( nextActionMessageToSend != NULL ) {
                             // forget pending action, we've been interrupted
                             delete [] nextActionMessageToSend;
@@ -12146,7 +12153,7 @@ void LivingLifePage::step() {
                                 for( int t=0; t<tokens->size(); t++ ) {
                                     char *tok = tokens->getElementDirect( t );
                                     
-                                    int mID = 0;
+									int mID = 0;
                                     sscanf( tok, "%d", &mID );
                                     
                                     if( mID != 0 ) {
@@ -12481,14 +12488,14 @@ void LivingLifePage::step() {
                     int oldFoodStore = ourLiveObject->foodStore;
                     if (foodStore == oldFoodStore - 1 || mYumBonus == oldYumBonus - 1) // AO: food loss from hunger
                     {
-                        AOFoodDecrementETA = game_getCurrentTime() + computeFoodDecrementTimeSeconds(AOLastKnownHeat);
+						computeAndSetFoodDecrementETA();
                     }
 		    if (lastAteID != 0)
 		    {
 		    	ObjectRecord *lastAte = getObject(lastAteID);
 			if (foodStore - lastAteFillMax != lastAte->foodValue + eatBonus) // AO: ate food during same tick as food loss
 			{
-			    AOFoodDecrementETA = game_getCurrentTime() + computeFoodDecrementTimeSeconds(AOLastKnownHeat);
+			    computeAndSetFoodDecrementETA();
 			}
 		    }
                     
