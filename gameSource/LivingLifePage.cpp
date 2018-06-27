@@ -115,6 +115,7 @@ static char savingSpeechMask = false;
 float AOLastKnownHeat = 0.0;
 int AOFoodDecrementETA = 0;
 double AOFoodDecrementFudge = 0.25; // fudge the time remaining, to account for RTT over network
+int AOKnownToBeHeld = 0; // are we being held by another player?
 // values from server/settings; wish I could read these at runtime 
 int maxFoodDecrementSeconds = 20;
 int minFoodDecrementSeconds = 2;
@@ -142,7 +143,7 @@ double computeFoodDecrementTimeSeconds(float heat)
 double computeFoodDecrementTimeRemainingSeconds()
 {
     double delta = AOFoodDecrementETA - game_getCurrentTime();
-    if (delta <= 0)
+    if (delta <= 0 || AOKnownToBeHeld)
     {
     	return 0.0;
     }
@@ -9787,10 +9788,25 @@ void LivingLifePage::step() {
                                       &justAteID,
                                       &responsiblePlayerID,
                                       &heldYum);
-				if (o.id == ourID)
+								
+				if (strstr(holdingIDBuffer, ",") == NULL)
 				{
+					if (-(atoi( holdingIDBuffer )) == ourID) // we are the one being held
+					{
+						AOKnownToBeHeld = 1;					
+					}					
+				}
+				
+				if (o.id == ourID)
+				{					
+					if (AOKnownToBeHeld) // we were just dropped/wiggled out
+					{
+						computeAndSetFoodDecrementETA();
+					}
+					AOKnownToBeHeld = 0; // according to protocol.txt, if receive a PU about babies when dropped
 					AOLastKnownHeat = o.heat;
 				}
+				
  
                 // heldYum is 24th value, optional
                 if( numRead >= 23 ) {
@@ -11328,8 +11344,7 @@ void LivingLifePage::step() {
                     babyO->inMotion = false;
                     
                     if( babyO->id == ourID ) {
-						computeAndSetFoodDecrementETA(); // AO: reset ETA when dropped
-                        if( nextActionMessageToSend != NULL ) {
+						if( nextActionMessageToSend != NULL ) {
                             // forget pending action, we've been interrupted
                             delete [] nextActionMessageToSend;
                             nextActionMessageToSend = NULL;
