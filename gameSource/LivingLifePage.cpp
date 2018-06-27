@@ -116,6 +116,8 @@ float AOLastKnownHeat = 0.0;
 int AOFoodDecrementETA = 0;
 double AOFoodDecrementFudge = 0.25; // fudge the time remaining, to account for RTT over network
 int AOKnownToBeHeld = 0; // are we being held by another player?
+int AOLastKnownHolderIsFertile = 0; // TODO: there is a case where the woman becomes unfertile while holding us.
+									// devise a way to resolve this, probably just compute her age at time of dropping
 // values from server/settings; wish I could read these at runtime 
 int maxFoodDecrementSeconds = 20;
 int minFoodDecrementSeconds = 2;
@@ -9793,13 +9795,14 @@ void LivingLifePage::step() {
 				{
 					if (-(atoi( holdingIDBuffer )) == ourID) // we are the one being held
 					{
-						AOKnownToBeHeld = 1;					
+						AOKnownToBeHeld = 1;
+						AOLastKnownHolderIsFertile = o.age >= 14 && o.age <= 40 && !getObject(o.displayID)->male;
 					}					
 				}
 				
 				if (o.id == ourID)
 				{					
-					if (AOKnownToBeHeld) // we were just dropped/wiggled out
+					if (AOKnownToBeHeld && AOLastKnownHolderIsFertile) // we were just dropped/wiggled out, and we were held by a fertile woman
 					{
 						computeAndSetFoodDecrementETA();
 					}
