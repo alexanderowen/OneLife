@@ -12507,30 +12507,28 @@ void LivingLifePage::step() {
                     rO->pendingReceivedMessages.push_back(
                         stringDuplicate( message ) );
                     }
-                else {
-                    char foodIncreased = false;
-                    int oldFoodStore = ourLiveObject->foodStore;
-                    if (foodStore == oldFoodStore - 1 || mYumBonus == oldYumBonus - 1) // AO: food loss from hunger
-                    {
-						computeAndSetFoodDecrementETA();
-                    }
-		    if (lastAteID != 0)
-		    {
-		    	ObjectRecord *lastAte = getObject(lastAteID);
-			if (foodStore - lastAteFillMax != lastAte->foodValue + eatBonus) // AO: ate food during same tick as food loss
-			{
-			    computeAndSetFoodDecrementETA();
-			}
-		    }
+					else 
+					{
+						char foodIncreased = false;
+						int oldFoodStore = ourLiveObject->foodStore;
+						if (foodStore == oldFoodStore - 1 || mYumBonus == oldYumBonus - 1) // AO: food loss from hunger
+						{
+							computeAndSetFoodDecrementETA();
+						}
+						else if (lastAteID != 0)
+						{
+							computeAndSetFoodDecrementETA();
+						}
                     
-                    if( foodCapacity == ourLiveObject->foodCapacity &&
-                        foodStore > ourLiveObject->foodStore ) {
-                        foodIncreased = true;
-                        }
+						if( foodCapacity == ourLiveObject->foodCapacity &&
+							foodStore > ourLiveObject->foodStore ) 
+						{
+							foodIncreased = true;
+						}
                     
-                    ourLiveObject->foodStore = foodStore;
-                    ourLiveObject->foodCapacity = foodCapacity;
-                    ourLiveObject->lastSpeed = lastSpeed;
+						ourLiveObject->foodStore = foodStore;
+						ourLiveObject->foodCapacity = foodCapacity;
+						ourLiveObject->lastSpeed = lastSpeed;
                     
 
                     if( mCurrentLastAteString != NULL ) {                    
