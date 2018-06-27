@@ -118,6 +118,7 @@ double AOFoodDecrementFudge = 0.25; // fudge the time remaining, to account for 
 int AOKnownToBeHeld = 0; // are we being held by another player?
 int AOLastKnownHolderIsFertile = 0; // TODO: there is a case where the woman becomes unfertile while holding us.
 									// devise a way to resolve this, probably just compute her age at time of dropping
+int AOHaveOutstandingNurseCost = 0;
 // values from server/settings; wish I could read these at runtime 
 int maxFoodDecrementSeconds = 20;
 int minFoodDecrementSeconds = 2;
@@ -9793,7 +9794,7 @@ void LivingLifePage::step() {
 								
 				if (strstr(holdingIDBuffer, ",") == NULL)
 				{
-					if (-(atoi( holdingIDBuffer )) == ourID) // we are the one being held
+					if (-(atoi(holdingIDBuffer)) == ourID) // we are the one being held
 					{
 						AOKnownToBeHeld = 1;
 						AOLastKnownHolderIsFertile = o.age >= 14 && o.age <= 40 && !getObject(o.displayID)->male;
@@ -9806,7 +9807,15 @@ void LivingLifePage::step() {
 					{
 						computeAndSetFoodDecrementETA();
 					}
-					AOKnownToBeHeld = 0; // according to protocol.txt, if receive a PU about babies when dropped
+					
+					if (strstr(holdingIDBuffer, ",") == NULL && atoi(holdingIDBuffer) < 0) // we are holding a baby
+					{
+						fprintf(stderr, "now holding a baby at index %d\n", i);
+						fprintf(stderr, "%s\n", lines[i]);
+						AOHaveOutstandingNurseCost = 1;
+					}
+
+					AOKnownToBeHeld = 0; // according to protocol.txt, babies get a PU when dropped
 					AOLastKnownHeat = o.heat;
 				}
 				
@@ -11427,9 +11436,9 @@ void LivingLifePage::step() {
                 ourObject->lastActionSendStartTime = 0;
                 ourObject->lastResponseTimeDelta = 0;
 
-                // AO: initial values; per server.processLoggedInPlayer, player spawns at maxFoodDecrement 
-                AOLastKnownHeat = 0.0;
-                AOFoodDecrementETA = game_getCurrentTime() + maxFoodDecrementSeconds;
+                // AO: initial values; per server.processLoggedInPlayer, player spawns with true maxFoodDecrementETA
+                AOLastKnownHeat = 0.5;
+                AOFoodDecrementETA = game_getCurrentTime() + maxFoodDecrementSeconds + minFoodDecrementSeconds;
 
                 remapRandSource.reseed( ourID );
 
@@ -12511,7 +12520,12 @@ void LivingLifePage::step() {
 					{
 						char foodIncreased = false;
 						int oldFoodStore = ourLiveObject->foodStore;
-						if (foodStore == oldFoodStore - 1 || mYumBonus == oldYumBonus - 1) // AO: food loss from hunger
+						int lostFood = foodStore == oldFoodStore - 1 || mYumBonus == oldYumBonus - 1;
+						if (AOHaveOutstandingNurseCost)
+						{
+							AOHaveOutstandingNurseCost = 0; // skip recomputing foodDecrementETA							
+						}
+						else if (lostFood) // AO: food loss from hunger
 						{
 							computeAndSetFoodDecrementETA();
 						}
