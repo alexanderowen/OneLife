@@ -12156,6 +12156,12 @@ void LivingLifePage::step() {
 									int mID = 0;
                                     sscanf( tok, "%d", &mID );
                                     
+									// AO: server resets foodDecrementETA on birth, this is the workaround to find out if we just gave birth
+									if (t == 0 && mID == ourID) // we are the mother
+									{
+										computeAndSetFoodDecrementETA();
+									}
+									
                                     if( mID != 0 ) {
                                         existing->lineage.push_back( mID );
                                         }
