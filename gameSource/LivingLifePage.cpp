@@ -6312,6 +6312,7 @@ void LivingLifePage::draw( doublePair inViewCenter,
         if( ! equal( mYumSlipPosOffset[i], mYumSlipHideOffset[i] ) ) {
             doublePair slipPos = 
                 add( mYumSlipPosOffset[i], lastScreenViewCenter );
+			slipPos.y -= fovmod::gui_offset_y;
             setDrawColor( 1, 1, 1, 1 );
             drawSprite( mYumSlipSprites[i], slipPos );
             
