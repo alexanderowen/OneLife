@@ -6484,7 +6484,7 @@ void LivingLifePage::draw( doublePair inViewCenter,
             }
 
         doublePair yumPos = { lastScreenViewCenter.x - 480, 
-                              lastScreenViewCenter.y - 313 };
+                              lastScreenViewCenter.y - 313 - fovmod::gui_offset_y};
         
         setDrawColor( 0, 0, 0, 1 );
         if( mYumBonus > 0 ) {    
