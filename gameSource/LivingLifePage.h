@@ -34,6 +34,15 @@
 
 #define NUM_YUM_SLIPS 4
 
+// FOVMOD NOTE: change 1/1 - take those lines during merge process
+// Some global constants to make mod work.
+// You can change value of scale to anything you want.
+// Default scale of 1.5 brings game up to FullHD 1920x1080.
+namespace fovmod {
+    const float scale = 3;
+    const int gui_offset_x = (int)(((1280 * scale) - 1280)/2);
+    const int gui_offset_y = (int)(((720 * scale) - 720)/2);
+}
 
 typedef struct LiveObject {
         int id;

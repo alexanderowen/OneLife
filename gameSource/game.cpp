@@ -145,8 +145,11 @@ doublePair lastScreenViewCenter = {0, 0 };
 
 
 // world width of one view
-double viewWidth = 1280;
-double viewHeight = 720;
+// FOVMOD NOTE: change 1/1 - take those lines during merge process
+double viewWidth = 1280 * fovmod::scale;
+double viewHeight = 720 * fovmod::scale;
+
+
 
 
 // this is the desired visible width
